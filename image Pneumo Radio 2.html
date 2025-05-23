@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Radiologique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f2f9ff;
+            margin: 0;
+            padding: 20px;
+        }
+        img {
+            max-width: 90%;
+            height: auto;
+            border: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .option {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            background-color: #ffffff;
+            border: 2px solid #007bff;
+            color: #007bff;
+            border-radius: 8px;
+            width: 300px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .score {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .feedback {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .next-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+  <h1>Quiz Radiologique</h1>
+  <div class="score">Score : <span id="score">0</span> / 5</div>
+  <div id="quiz-container">
+    <img id="image" src="" alt="Image radiologique">
+    <div id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" onclick="nextQuestion()" disabled>Suivant</button>
+  </div>
+
+  <script>
+    const questions = [{'image': 'https://i.imgur.com/ylV5aoI.jpeg', 'correct': 'Cancer broncho pulmonaire'}, {'image': 'https://i.imgur.com/5S2lVud.jpeg', 'correct': 'Plaque pleurale'}, {'image': 'https://i.imgur.com/pJAjUFk.jpeg', 'correct': 'Pleurésie'}, {'image': 'https://i.imgur.com/fVmjmc7.jpeg', 'correct': 'Pneumothorax'}, {'image': 'https://i.imgur.com/tpKyKQV.jpeg', 'correct': 'Sarcoïdose'}, {'image': 'https://i.imgur.com/l5b6QA7.png', 'correct': 'Emphysème'}, {'image': 'https://i.imgur.com/64RW6fi.png', 'correct': 'Aspergillome'}, {'image': 'https://i.imgur.com/9eeULds.png', 'correct': 'DDB'}, {'image': 'https://i.imgur.com/mRZn9x2.png', 'correct': 'Image en nénuphar'}, {'image': 'https://i.imgur.com/g0c3pt3.png', 'correct': 'Suspicion de tuberculose'}, {'image': 'https://i.imgur.com/PeQe1gK.png', 'correct': 'Pneumonie'}, {'image': 'https://i.imgur.com/Mv4ukqC.png', 'correct': 'verre dépoli'}, {'image': 'https://i.imgur.com/VwvdNgU.png', 'correct': 'Pneumonie'}, {'image': 'https://i.imgur.com/TBXyW0v.png', 'correct': 'Atélectasie'}, {'image': 'https://i.imgur.com/RV8Ipou.png', 'correct': 'ascension d’une coupole diaphragmatique'}, {'image': 'https://i.imgur.com/6GItg5g.png', 'correct': 'Miliaire'}, {'image': 'https://i.imgur.com/HjRTKwO.png', 'correct': 'Fibrose'}, {'image': 'https://i.imgur.com/OlkGcUw.png', 'correct': 'Image nodulaire'}, {'image': 'https://i.imgur.com/zZtlug5.png', 'correct': 'Lymphangite'}, {'image': 'https://i.imgur.com/9gO8xcV.png', 'correct': 'Lacher de ballons'}, {'image': 'https://i.imgur.com/3Hjsfdw.png', 'correct': 'calcification en coquille d oeuf'}, {'image': 'https://i.imgur.com/ONqpjse.png', 'correct': 'Fibrose'}, {'image': 'https://i.imgur.com/OAIEnoa.png', 'correct': 'déformation de la trachée'}, {'image': 'https://i.imgur.com/2BniHNt.png', 'correct': 'Syndrome mediastinal sup'}, {'image': 'https://i.imgur.com/Khv4z1l.png', 'correct': 'Miliaire'}, {'image': 'https://i.imgur.com/QIrznaG.png', 'correct': 'Images en rayon de miel'}, {'image': 'https://i.imgur.com/NsPJC9F.png', 'correct': 'Images en rayon de miel'}, {'image': 'https://i.imgur.com/pBQlZVa.png', 'correct': 'Sarcoïdose'}];
+
+    const wrongAnswersPool = ['Pneumothorax', 'Cancer broncho pulmonaire', 'Sarcoïdose', 'Embolie pulmonaire', 'DDB', 'Silicose', 'Plaque pleurale', 'Pleurésie', 'Emphysème', 'Image en nénuphar', 'Suspicion de tuberculose', 'Pneumonie', 'verre dépoli', 'Miliaire', 'ascension d’une coupole diaphragmatique', 'Fibrose', 'Image nodulaire', 'Lacher de ballons', 'Lymphangite', 'calcification en coquille d oeuf', 'déformation de la trachée', 'Syndrome mediastinal sup', 'Images en rayon de miel'];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = questions.sort(() => 0.5 - Math.random());
+
+    function showQuestion() {
+      document.getElementById("feedback").textContent = "";
+      document.querySelector(".next-btn").disabled = true;
+
+      const question = shuffledQuestions[currentQuestionIndex];
+      document.getElementById("image").src = question.image;
+
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      const allOptions = [question.correct];
+      const shuffledWrong = wrongAnswersPool.filter(x => x !== question.correct).sort(() => 0.5 - Math.random()).slice(0, 3);
+      allOptions.push(...shuffledWrong);
+      allOptions.sort(() => 0.5 - Math.random());
+
+      allOptions.forEach(option => {
+        const btn = document.createElement("button");
+        btn.textContent = option;
+        btn.className = "option";
+        btn.onclick = () => {
+          if (option === question.correct) {
+            document.getElementById("feedback").textContent = "✅ Bonne réponse !";
+            score++;
+            document.getElementById("score").textContent = score;
+          } else {
+            document.getElementById("feedback").textContent =
+              "❌ Mauvaise réponse. La bonne réponse était : " + question.correct;
+          }
+          Array.from(document.getElementsByClassName("option")).forEach(b => b.disabled = true);
+          document.querySelector(".next-btn").disabled = false;
+        };
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < shuffledQuestions.length) {
+        showQuestion();
+      } else {
+        document.getElementById("quiz-container").innerHTML =
+          `<h2>Quiz terminé !</h2><p>Votre score est de ${score} / ${shuffledQuestions.length}</p>`;
+      }
+    }
+
+    showQuestion();
+  </script>
+  
+  
+  <p style="text-align:center; margin-top: 20px; font-style: italic; color: gray;">
+  Made by YoursTruly Educational purposes only
+</p>
+  
+  
+</body>
+</html>
